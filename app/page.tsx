@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { UserButton } from '@clerk/nextjs';
+import { UserButton, auth } from '@clerk/nextjs';
 import { Leaf, Shield, Heart, User, ArrowRight } from 'lucide-react';
 
 export default function Home() {
+  const { userId } = auth();
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-teal-100 dark:from-green-950 dark:to-teal-900">
       <header className="container mx-auto px-4 py-6 flex justify-between items-center">
@@ -13,14 +15,24 @@ export default function Home() {
         </div>
         <div className="flex items-center gap-4">
           <UserButton afterSignOutUrl="/" />
-          <Link href="/sign-in">
-            <Button variant="ghost">Sign In</Button>
-          </Link>
-          <Link href="/sign-up">
-            <Button className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white border-0">
-              Get Started
-            </Button>
-          </Link>
+          {!userId ? (
+            <>
+              <Link href="/sign-in">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link href="/sign-up">
+                <Button className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white border-0">
+                  Get Started
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <Link href="/dashboard">
+              <Button className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white border-0">
+                Go to Dashboard
+              </Button>
+            </Link>
+          )}
         </div>
       </header>
       
@@ -34,16 +46,26 @@ export default function Home() {
               Discover personalized Ayurvedic wellness advice powered by AI. Transform your health journey with ancient practices tailored to your modern lifestyle.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/sign-up">
-                <Button size="lg" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white border-0">
-                  Start Your Journey <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/sign-in">
-                <Button size="lg" variant="outline" className="border-teal-500 text-teal-700 dark:text-teal-300 dark:border-teal-700">
-                  Sign In
-                </Button>
-              </Link>
+              {!userId ? (
+                <>
+                  <Link href="/sign-up">
+                    <Button size="lg" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white border-0">
+                      Start Your Journey <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Link href="/sign-in">
+                    <Button size="lg" variant="outline" className="border-teal-500 text-teal-700 dark:text-teal-300 dark:border-teal-700">
+                      Sign In
+                    </Button>
+                  </Link>
+                </>
+              ) : (
+                <Link href="/dashboard">
+                  <Button size="lg" className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white border-0">
+                    Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
           <div className="flex-1 relative">
