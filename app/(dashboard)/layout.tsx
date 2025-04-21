@@ -1,15 +1,42 @@
+"use client";
+
 import { UserButton } from "@clerk/nextjs";
 import { Leaf, Menu } from "lucide-react";
 import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const response = await fetch('/api/user');
+        if (!response.ok) throw new Error('Failed to fetch user');
+        
+        const user = await response.json();
+        
+        if (user.subscriptionStatus === 'unpaid' && !window.location.pathname.includes('/subscription')) {
+          router.push('/subscription');
+          toast.error('Please subscribe to access the dashboard');
+        }
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+      }
+    };
+
+    checkSubscription();
+  }, [router]);
+
   return (
     <div className="h-screen flex flex-col">
       <header className="h-16 border-b border-border bg-card flex items-center px-4 md:px-6">
