@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from 'zustand';
+import { v4 as uuidv4 } from 'uuid';
 
 interface WellnessState {
   checkIns: {
@@ -68,7 +69,7 @@ interface ChatState {
     }[];
   }[];
   activeChat: string | null;
-  createChat: (title: string) => Promise<string>;
+  createChat: (title: string) => string;
   getChat: (id: string) => any;
   addMessage: (chatId: string, content: string, role: 'user' | 'system' | 'assistant') => Promise<void>;
   setActiveChat: (chatId: string) => void;
@@ -78,49 +79,64 @@ interface ChatState {
 export const useChatStore = create<ChatState>()((set, get) => ({
   chats: [],
   activeChat: null,
-  createChat: async (title) => {
-    try {
-      const response = await fetch('/api/chats', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title }),
-      });
-      
-      if (!response.ok) throw new Error('Failed to create chat');
-      
-      const chat = await response.json();
-      set((state) => ({
-        chats: [chat, ...state.chats],
-        activeChat: chat.id,
-      }));
-      
-      return chat.id;
-    } catch (error) {
-      console.error('Error creating chat:', error);
-      throw error;
-    }
+  createChat: (title) => {
+    const id = uuidv4();
+    const newChat = {
+      id,
+      title,
+      createdAt: new Date().toISOString(),
+      messages: [],
+    };
+    
+    set((state) => ({
+      chats: [newChat, ...state.chats],
+      activeChat: id,
+    }));
+    
+    return id;
   },
   getChat: (id) => {
     return get().chats.find(chat => chat.id === id);
   },
   addMessage: async (chatId, content, role) => {
+    const messageId = uuidv4();
+    const newMessage = {
+      id: messageId,
+      content,
+      role,
+      createdAt: new Date().toISOString(),
+    };
+
+    set((state) => ({
+      chats: state.chats.map(chat => 
+        chat.id === chatId 
+          ? {
+              ...chat,
+              messages: [...chat.messages, newMessage],
+            }
+          : chat
+      ),
+    }));
+
     try {
-      const response = await fetch(`/api/chats/${chatId}/messages`, {
+      await fetch(`/api/chats/${chatId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, role }),
       });
-      
-      if (!response.ok) throw new Error('Failed to add message');
-      
-      const updatedChat = await response.json();
-      set((state) => ({
-        chats: state.chats.map(chat => 
-          chat.id === chatId ? updatedChat : chat
-        ),
-      }));
     } catch (error) {
       console.error('Error adding message:', error);
+      // Remove the message if the API call fails
+      set((state) => ({
+        chats: state.chats.map(chat => 
+          chat.id === chatId 
+            ? {
+                ...chat,
+                messages: chat.messages.filter(msg => msg.id !== messageId),
+              }
+            : chat
+        ),
+      }));
       throw error;
     }
   },
