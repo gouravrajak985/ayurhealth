@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -9,14 +9,31 @@ import { getWellnessQuestions } from "@/lib/utils";
 import { useChatStore, useWellnessStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 
 export default function NewChatPage() {
   const [step, setStep] = useState(0);
   const [responses, setResponses] = useState<Record<string, string>>({});
+  const [isCheckedIn, setIsCheckedIn] = useState(false);
   const questions = getWellnessQuestions();
   const { createChat, addMessage } = useChatStore();
-  const { addCheckIn } = useWellnessStore();
+  const { addCheckIn, checkIns } = useWellnessStore();
   const router = useRouter();
+
+  useEffect(() => {
+    // Check if user has already checked in today
+    const today = new Date().toISOString().split('T')[0];
+    const hasCheckedInToday = checkIns.some(checkIn => {
+      const checkInDate = new Date(checkIn.date).toISOString().split('T')[0];
+      return checkInDate === today;
+    });
+    
+    if (hasCheckedInToday) {
+      setIsCheckedIn(true);
+      toast.info("You've already completed your wellness check-in for today. Come back tomorrow!");
+      router.push('/chat');
+    }
+  }, [checkIns, router]);
   
   const handleOptionSelect = (questionId: string, answer: string) => {
     setResponses({
@@ -27,31 +44,36 @@ export default function NewChatPage() {
   
   const currentQuestion = questions[step];
   
-  const handleNext = () => {
+  const handleNext = async () => {
     if (step < questions.length - 1) {
       setStep(step + 1);
     } else {
-      // Create a new chat with the responses
-      const today = new Date().toISOString();
-      const chatId = createChat(`Wellness Check-in ${new Date().toLocaleDateString()}`);
-      
-      // Add the wellness check-in to the tracker
-      addCheckIn(today, responses);
-      
-      // Generate a message from the responses
-      const message = `Hello! I'm having a wellness check-in today. Here's how I'm feeling:
+      try {
+        // Create a new chat with the responses
+        const today = new Date().toISOString();
+        const chatId = await createChat(`Wellness Check-in ${new Date().toLocaleDateString()}`);
+        
+        // Add the wellness check-in to the tracker
+        await addCheckIn(today, responses);
+        
+        // Generate a message from the responses
+        const message = `Hello! I'm having a wellness check-in today. Here's how I'm feeling:
 ${Object.entries(responses).map(([key, value]) => {
   const question = questions.find(q => q.id === key);
   return `- ${question?.question}: ${value}`;
 }).join('\n')}
 
 Based on this information, could you provide me with some Ayurvedic advice for today?`;
-      
-      // Add the message to the chat
-      addMessage(chatId, message, "user");
-      
-      // Redirect to the chat
-      router.push(`/chat/${chatId}`);
+        
+        // Add the message to the chat
+        await addMessage(chatId, message, "user");
+        
+        // Redirect to the chat
+        router.push(`/chat/${chatId}`);
+      } catch (error) {
+        console.error('Error creating chat:', error);
+        toast.error('Failed to create chat. Please try again.');
+      }
     }
   };
   
@@ -64,6 +86,10 @@ Based on this information, could you provide me with some Ayurvedic advice for t
   };
   
   const isNextDisabled = !responses[currentQuestion?.id];
+
+  if (isCheckedIn) {
+    return null; // Return null since we're redirecting
+  }
   
   return (
     <div className="container p-6 max-w-2xl mx-auto">

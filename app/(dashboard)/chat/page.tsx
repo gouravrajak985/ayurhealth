@@ -10,10 +10,15 @@ import { useRouter } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 
 export default function ChatPage() {
-  const { chats } = useChatStore();
-  const { shouldPromptNewCheckIn } = useWellnessStore();
+  const { chats, fetchChats } = useChatStore();
+  const { shouldPromptNewCheckIn, fetchCheckIns } = useWellnessStore();
   const [showPrompt, setShowPrompt] = useState(false);
   const router = useRouter();
+  
+  useEffect(() => {
+    fetchChats();
+    fetchCheckIns();
+  }, [fetchChats, fetchCheckIns]);
   
   useEffect(() => {
     setShowPrompt(shouldPromptNewCheckIn());
@@ -69,7 +74,7 @@ export default function ChatPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {chats.map((chat) => (
-            <Link key={chat.id} href={`/chat/${chat.id}`}>
+            <Link key={chat._id || chat.id} href={`/chat/${chat._id || chat.id}`}>
               <Card className="h-full cursor-pointer hover:shadow-md transition-shadow border-gray-200 dark:border-gray-800 overflow-hidden group">
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-3">

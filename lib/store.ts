@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 interface WellnessState {
   checkIns: {
+    _id: string;
     date: string;
     responses: Record<string, string>;
   }[];
@@ -27,7 +28,7 @@ export const useWellnessStore = create<WellnessState>()((set, get) => ({
       
       const checkIn = await response.json();
       set((state) => ({
-        checkIns: [...state.checkIns, checkIn],
+        checkIns: [checkIn, ...state.checkIns],
       }));
     } catch (error) {
       console.error('Error adding check-in:', error);
@@ -56,21 +57,27 @@ export const useWellnessStore = create<WellnessState>()((set, get) => ({
   },
 }));
 
+interface Message {
+  _id?: string;
+  id?: string;
+  content: string;
+  role: 'user' | 'system' | 'assistant';
+  createdAt: string;
+}
+
+interface Chat {
+  _id: string;
+  id?: string;
+  title: string;
+  createdAt: string;
+  messages: Message[];
+}
+
 interface ChatState {
-  chats: {
-    id: string;
-    title: string;
-    createdAt: string;
-    messages: {
-      id: string;
-      content: string;
-      role: 'user' | 'system' | 'assistant';
-      createdAt: string;
-    }[];
-  }[];
+  chats: Chat[];
   activeChat: string | null;
-  createChat: (title: string) => string;
-  getChat: (id: string) => any;
+  createChat: (title: string) => Promise<string>;
+  getChat: (id: string) => Chat | undefined;
   addMessage: (chatId: string, content: string, role: 'user' | 'system' | 'assistant') => Promise<void>;
   setActiveChat: (chatId: string) => void;
   fetchChats: () => Promise<void>;
@@ -79,64 +86,53 @@ interface ChatState {
 export const useChatStore = create<ChatState>()((set, get) => ({
   chats: [],
   activeChat: null,
-  createChat: (title) => {
-    const id = uuidv4();
-    const newChat = {
-      id,
-      title,
-      createdAt: new Date().toISOString(),
-      messages: [],
-    };
-    
-    set((state) => ({
-      chats: [newChat, ...state.chats],
-      activeChat: id,
-    }));
-    
-    return id;
+  createChat: async (title) => {
+    try {
+      const response = await fetch('/api/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+
+      if (!response.ok) throw new Error('Failed to create chat');
+      
+      const chat = await response.json();
+      
+      set((state) => ({
+        chats: [chat, ...state.chats],
+        activeChat: chat._id,
+      }));
+      
+      return chat._id;
+    } catch (error) {
+      console.error('Error creating chat:', error);
+      throw error;
+    }
   },
   getChat: (id) => {
-    return get().chats.find(chat => chat.id === id);
+    return get().chats.find(chat => chat._id === id || chat.id === id);
   },
   addMessage: async (chatId, content, role) => {
-    const messageId = uuidv4();
-    const newMessage = {
-      id: messageId,
-      content,
-      role,
-      createdAt: new Date().toISOString(),
-    };
-
-    set((state) => ({
-      chats: state.chats.map(chat => 
-        chat.id === chatId 
-          ? {
-              ...chat,
-              messages: [...chat.messages, newMessage],
-            }
-          : chat
-      ),
-    }));
-
     try {
-      await fetch(`/api/chats/${chatId}/messages`, {
+      const response = await fetch(`/api/chats/${chatId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, role }),
       });
-    } catch (error) {
-      console.error('Error adding message:', error);
-      // Remove the message if the API call fails
+
+      if (!response.ok) throw new Error('Failed to add message');
+      
+      const updatedChat = await response.json();
+      
       set((state) => ({
         chats: state.chats.map(chat => 
-          chat.id === chatId 
-            ? {
-                ...chat,
-                messages: chat.messages.filter(msg => msg.id !== messageId),
-              }
+          chat._id === chatId || chat.id === chatId
+            ? updatedChat
             : chat
         ),
       }));
+    } catch (error) {
+      console.error('Error adding message:', error);
       throw error;
     }
   },
