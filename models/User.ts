@@ -11,6 +11,19 @@ const userSchema = new mongoose.Schema({
     enum: ['unpaid', 'paid'],
     default: 'unpaid'
   },
+  profile: {
+    weight: Number,
+    height: Number,
+    age: Number,
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other']
+    },
+    foodPreference: {
+      type: String,
+      enum: ['vegan', 'vegetarian', 'non-vegetarian']
+    }
+  },
   createdAt: {
     type: Date,
     default: Date.now

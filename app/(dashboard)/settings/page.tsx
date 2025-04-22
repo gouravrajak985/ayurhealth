@@ -5,30 +5,110 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useWellnessStore, useChatStore } from "@/lib/store";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 export default function SettingsPage() {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [privacyMode, setPrivacyMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [profileData, setProfileData] = useState({
+    weight: '',
+    height: '',
+    age: '',
+    gender: '',
+    foodPreference: ''
+  });
   
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/user');
+        if (!response.ok) throw new Error('Failed to fetch user data');
+        
+        const userData = await response.json();
+        if (userData.profile) {
+          setProfileData({
+            weight: userData.profile.weight?.toString() || '',
+            height: userData.profile.height?.toString() || '',
+            age: userData.profile.age?.toString() || '',
+            gender: userData.profile.gender || '',
+            foodPreference: userData.profile.foodPreference || ''
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+        toast.error('Failed to load profile data');
+      } finally {
+        setLoading(false);
+        setInitialLoad(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
   const handleResetData = () => {
     const confirmReset = window.confirm(
       "Are you sure you want to reset all your data? This will delete all your chats and wellness check-ins."
     );
     
     if (confirmReset) {
-      // Clear the localStorage
       localStorage.removeItem('wellness-storage');
       localStorage.removeItem('chat-storage');
-      
-      // Reload the page to refresh the stores
       window.location.reload();
-      
       toast.success("All data has been reset successfully");
     }
   };
+
+  const handleSaveProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          weight: parseInt(profileData.weight),
+          height: parseInt(profileData.height),
+          age: parseInt(profileData.age),
+          gender: profileData.gender,
+          foodPreference: profileData.foodPreference,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update profile');
+      
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  if (initialLoad) {
+    return (
+      <div className="container p-6 max-w-3xl mx-auto">
+        <div className="flex items-center justify-center min-h-[200px]">
+          <div className="text-center text-muted-foreground">Loading profile data...</div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="container p-6 max-w-3xl mx-auto">
@@ -37,6 +117,92 @@ export default function SettingsPage() {
       </h1>
       
       <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Data</CardTitle>
+            <CardDescription>Manage your personal health information</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="weight">Weight (kg)</Label>
+                <Input
+                  id="weight"
+                  type="number"
+                  value={profileData.weight}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, weight: e.target.value }))}
+                  placeholder="Enter weight in kg"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="height">Height (cm)</Label>
+                <Input
+                  id="height"
+                  type="number"
+                  value={profileData.height}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, height: e.target.value }))}
+                  placeholder="Enter height in cm"
+                />
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  value={profileData.age}
+                  onChange={(e) => setProfileData(prev => ({ ...prev, age: e.target.value }))}
+                  placeholder="Enter age"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  value={profileData.gender}
+                  onValueChange={(value) => setProfileData(prev => ({ ...prev, gender: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="foodPreference">Food Preference</Label>
+              <Select
+                value={profileData.foodPreference}
+                onValueChange={(value) => setProfileData(prev => ({ ...prev, foodPreference: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select preference" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="vegan">Vegan</SelectItem>
+                  <SelectItem value="vegetarian">Vegetarian</SelectItem>
+                  <SelectItem value="non-vegetarian">Non-vegetarian</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              onClick={handleSaveProfile}
+              disabled={loading}
+              className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
+            >
+              {loading ? 'Saving...' : 'Save Profile'}
+            </Button>
+          </CardFooter>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Notifications</CardTitle>

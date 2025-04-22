@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
+import { DietPlan } from "@/components/dashboard/diet-plan";
 
 export default function DashboardPage() {
   const { userId } = auth();
@@ -63,7 +64,10 @@ export default function DashboardPage() {
           </CardFooter>
         </Card>
       </div>
-      
+
+      <div className="mt-8">
+        <DietPlan />
+      </div>
     </div>
   );
 }
