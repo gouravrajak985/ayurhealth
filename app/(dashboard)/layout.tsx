@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import { SubscriptionPopup } from "@/components/subscription/subscription-popup";
 
 export default function DashboardLayout({
@@ -20,10 +21,12 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isUnpaid, setIsUnpaid] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); 
 
   useEffect(() => {
     const checkSubscription = async () => {
       try {
+        setIsLoading(true); // Start loading
         const response = await fetch('/api/user');
         if (!response.ok) throw new Error('Failed to fetch user');
         
@@ -37,11 +40,25 @@ export default function DashboardLayout({
         }
       } catch (error) {
         console.error('Error checking subscription:', error);
+      } finally {
+        setIsLoading(false); // Stop loading
       }
     };
 
     checkSubscription();
   }, [pathname]);
+
+    // Add loading screen
+    if (isLoading) {
+      return (
+        <div className="h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-900 dark:to-gray-950">
+          <div className="flex flex-col items-center gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-green-600 dark:text-green-400" />
+            <p className="text-muted-foreground">Loading your dashboard...</p>
+          </div>
+        </div>
+      );
+    }
 
   return (
     <div className="h-screen flex flex-col">
