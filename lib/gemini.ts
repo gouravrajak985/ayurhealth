@@ -29,66 +29,91 @@ Remember to maintain a supportive and knowledgeable tone while providing structu
   }
 }
 
-export async function getAyurvedicDietPlan(userProfile: {
-  weight: number;
-  height: number;
-  gender: string;
-  age: number;
-  foodPreference: string;
-  [key: string]: any;
-}) {
+export async function getAyurvedicDietPlan(preferences: any) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `As an Ayurvedic nutritionist, create a detailed 7-day diet plan based on the following user profile:
+    const prompt = `Create a personalized Ayurvedic diet plan based on the following preferences and requirements. Format the response as a valid JSON string with proper escaping of special characters.
 
-Weight: ${userProfile.weight} kg
-Height: ${userProfile.height} cm
-Gender: ${userProfile.gender}
-Age: ${userProfile.age}
-Food Preference: ${userProfile.foodPreference}
+User preferences: ${JSON.stringify(preferences)}
 
-Create a 7-day diet plan with the following structure for each day:
-[
-  {
-    "day": "Monday",
-    "meals": [
-      {
-        "time": "Breakfast (7-8 AM)",
-        "items": ["Item 1", "Item 2"],
-        "herbs": ["Herb 1", "Herb 2"],
-        "recipe": {
-          "name": "Recipe Name",
-          "ingredients": ["Ingredient 1", "Ingredient 2"],
-          "instructions": ["Step 1", "Step 2"]
+The response should be a JSON object with the following structure:
+{
+  "title": "string",
+  "description": "string",
+  "recommendations": {
+    "general": ["string"],
+    "avoid": ["string"]
+  },
+  "meals": {
+    "breakfast": {
+      "options": [
+        {
+          "name": "string",
+          "ingredients": ["string"],
+          "instructions": "string"
         }
-      }
-    ],
-    "remedies": ["Remedy 1", "Remedy 2"]
+      ]
+    },
+    "lunch": {
+      "options": [
+        {
+          "name": "string",
+          "ingredients": ["string"],
+          "instructions": "string"
+        }
+      ]
+    },
+    "dinner": {
+      "options": [
+        {
+          "name": "string",
+          "ingredients": ["string"],
+          "instructions": "string"
+        }
+      ]
+    },
+    "snacks": {
+      "options": [
+        {
+          "name": "string",
+          "ingredients": ["string"],
+          "instructions": "string"
+        }
+      ]
+    }
   }
-]
-
-Important:
-- Follow the exact JSON structure shown above
-- Include 3-4 meals per day (breakfast, lunch, dinner, and optional snacks)
-- Each meal should have 2-4 items and 1-2 herbs
-- Include one detailed recipe per meal
-- Add 2-3 daily Ayurvedic remedies
-- Keep recipes practical with easily available ingredients
-- Focus on balancing doshas and promoting wellness
-- Ensure the response is a valid JSON array`;
+}`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    let text = response.text();
+
     
-    // Extract JSON from the response
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error("Invalid response format");
+    text = text.replace(/```json|```/g, '').trim();
+
+    try {
+      // Try to parse the response as JSON
+      const dietPlan = JSON.parse(text);
+      return dietPlan;
+    } catch (parseError) {
+      console.error("Error parsing diet plan JSON:", parseError);
+      
+      // If JSON parsing fails, try to extract JSON from the response
+      // Sometimes the model might include markdown or other text
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          const extractedJson = JSON.parse(jsonMatch[0]);
+          return extractedJson;
+        } catch (extractError) {
+          console.error("Error parsing extracted JSON:", extractError);
+          throw new Error("Failed to parse diet plan response");
+        }
+      }
+      
+      throw new Error("Failed to generate diet plan");
     }
-    
-    return JSON.parse(jsonMatch[0]);
   } catch (error) {
     console.error("Error getting diet plan:", error);
     throw new Error("Failed to generate diet plan");

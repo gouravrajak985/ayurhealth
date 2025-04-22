@@ -61,6 +61,8 @@ export async function POST(req: Request) {
       ...preferences,
     });
 
+    console.log('Generated diet plan:', dietPlanData);
+
     const weekStartDate = new Date();
     weekStartDate.setHours(0, 0, 0, 0);
     weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay());
