@@ -42,35 +42,29 @@ export async function POST(req: Request) {
     
     // Get user profile
     const user = await User.findOne({ userId });
-
-    if (!user) {
-      return new NextResponse('User not found', { status: 404 });
+    if (!user || !user.profile) {
+      return new NextResponse('User profile not found', { status: 404 });
     }
 
-    const { profile} = user;
-
-    const { preferences } = await req.json();
-    
     // Generate diet plan using Gemini
-    const dietPlanData = await getAyurvedicDietPlan({
-      weight: profile.weight,
-      height: profile.height,
-      gender: profile.gender,
-      age: profile.age,
-      foodPreference: profile.foodPreference,
-      ...preferences,
+    const dailyPlans = await getAyurvedicDietPlan({
+      weight: user.profile.weight,
+      height: user.profile.height,
+      age: user.profile.age,
+      gender: user.profile.gender,
+      foodPreference: user.profile.foodPreference,
     });
 
-    console.log('Generated diet plan:', dietPlanData);
-
+    // Set week start date to current week's Monday
     const weekStartDate = new Date();
     weekStartDate.setHours(0, 0, 0, 0);
-    weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay());
+    weekStartDate.setDate(weekStartDate.getDate() - weekStartDate.getDay() + 1);
 
+    // Create new diet plan
     const dietPlan = await DietPlan.create({
       userId,
       weekStartDate,
-      dailyPlans: dietPlanData,
+      dailyPlans,
     });
 
     return NextResponse.json(dietPlan);
