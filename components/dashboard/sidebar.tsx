@@ -3,14 +3,7 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  MessageSquare,
-  LineChart,
-  Home,
-  Settings,
-  Leaf,
-  User,
-} from "lucide-react";
+import { MessageSquare, LineChart, Home, Settings, Leaf } from "lucide-react";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { UserButton } from "@clerk/nextjs";
 
@@ -45,7 +38,7 @@ export function Sidebar({ className }: SidebarProps) {
   ];
 
   return (
-    <div className={cn("flex flex-col max-h-screen bg-card", className)}>
+    <div className={cn("flex flex-col h-full", className)}>
       {/* Logo Section */}
       <div className="p-6 border-b border-border/50">
         <Link href="/dashboard" className="flex items-center gap-2">
@@ -84,22 +77,26 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
       </nav>
 
-      {/* User Controls Section */}
-      <div className="border-t border-border/50">
-        <div className="p-4 space-y-3">
-          <ModeToggle className="w-full justify-start text-sm font-medium text-muted-foreground hover:text-green-600 dark:hover:text-green-400 hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5" />
-          <div className="  flex flex-row items-start rounded-lg hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5 transition-colors">
-            <div
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground font-medium transition-colors"
-                
-              )}
-            >
-              <UserButton afterSignOutUrl="/" />
-              {"User"}
-            </div>
-          </div>
+      {/* User Controls Section - Fixed at Bottom */}
+      <div className="border-t border-border/50 p-4 space-y-3">
+      <div className="bg-gradient-to-tr from-green-400 via-emerald-500 to-lime-500 p-[2px] rounded-lg">
+      <ModeToggle className="w-full justify-start text-sm font-medium text-muted-foreground bg-neutral-800 rounded-lg p-4 hover:text-green-600 dark:hover:text-green-400 hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5" />
+      </div>
+      <div className="bg-gradient-to-tr from-green-400 via-emerald-500 to-lime-500 p-[2px] rounded-lg">
+        <div className="flex items-center gap-3 px-2 py-2 bg-neutral-800 rounded-lg text-sm text-muted-foreground ">
+          <UserButton
+            afterSignOutUrl="/"
+            appearance={{
+              elements: {
+                userButtonAvatarBox:
+                  "p-[2px] rounded-full bg-gradient-to-tr from-green-400 via-emerald-500 to-lime-500",
+                userButtonAvatarImage: "rounded-full",
+              },
+            }}
+          />
+          <span className="font-medium hover:text-green-600 dark:hover:text-green-400 hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5">Account</span>
         </div>
+      </div>
       </div>
     </div>
   );
