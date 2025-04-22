@@ -5,6 +5,8 @@ import { Send } from "lucide-react";
 import { useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useChatStore } from "@/lib/store";
+import { useMessageSounds } from "@/lib/sounds";
+import { motion } from "framer-motion";
 
 interface ChatInputProps {
   chatId: string;
@@ -21,13 +23,15 @@ export function ChatInput({
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const { addMessage } = useChatStore();
+  const { playMessageOut } = useMessageSounds();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!message.trim()) return;
+    if (!message.trim() || disabled) return;
     
-    addMessage(chatId, message, "user");
+    playMessageOut();
+    await addMessage(chatId, message, "user");
     onSend(message);
     setMessage("");
   };
@@ -49,16 +53,22 @@ export function ChatInput({
             }
           }}
         />
-        <Button 
-          type="submit"
-          variant="ghost" 
-          size="icon" 
-          className="absolute right-1 top-1 h-8 w-8 text-muted-foreground hover:text-foreground" 
-          disabled={disabled || !message.trim()}
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="absolute right-1 top-1"
         >
-          <Send className="h-5 w-5" />
-          <span className="sr-only">Send</span>
-        </Button>
+          <Button 
+            type="submit"
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8 text-muted-foreground hover:text-foreground" 
+            disabled={disabled || !message.trim()}
+          >
+            <Send className="h-5 w-5" />
+            <span className="sr-only">Send</span>
+          </Button>
+        </motion.div>
       </div>
     </form>
   );

@@ -3,18 +3,19 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Settings, User } from "lucide-react";
+import { Loader2, Settings, Clock, Apple, Leaf, Scroll, ChevronDown, UtensilsCrossed, Calendar } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { format } from "date-fns";
 
 interface UserProfile {
- weight?: number;
- height?: number;
-    age?: number
-    geneder?: string;
-    foodPreference?: string;
+  weight?: number;
+  height?: number;
+  age?: number;
+  gender?: string;
+  foodPreference?: string;
 }
 
 interface Recipe {
@@ -47,6 +48,7 @@ export function DietPlan() {
   const [dietPlan, setDietPlan] = useState<DietPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [expandedMeal, setExpandedMeal] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -80,6 +82,7 @@ export function DietPlan() {
       setLoading(false);
     }
   };
+
   const generateDietPlan = async () => {
     if (!userProfile) {
       toast.error('Please complete your profile in settings first');
@@ -108,6 +111,12 @@ export function DietPlan() {
     }
   };
 
+  const getTodaysPlan = () => {
+    if (!dietPlan) return null;
+    const today = format(new Date(), 'EEEE').toLowerCase();
+    return dietPlan.dailyPlans.find(plan => plan.day.toLowerCase() === today);
+  };
+
   if (loading) {
     return (
       <Card>
@@ -120,12 +129,13 @@ export function DietPlan() {
 
   if (!userProfile) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Diet Plan</CardTitle>
-          <CardDescription>
-            Complete your profile to get a personalized Ayurvedic diet plan
-          </CardDescription>
+      <Card className="overflow-hidden border-green-200 dark:border-green-900">
+        <CardHeader className="bg-gradient-to-r from-green-500/10 to-teal-500/10 dark:from-green-500/20 dark:to-teal-500/20">
+          <CardTitle className="flex items-center gap-2">
+            <UtensilsCrossed className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span>Today's Diet Plan</span>
+          </CardTitle>
+          <CardDescription>Complete your profile to get started</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <div className="text-center space-y-4">
@@ -149,17 +159,18 @@ export function DietPlan() {
 
   if (!dietPlan) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Diet Plan</CardTitle>
-          <CardDescription>
-            Generate a personalized Ayurvedic diet plan based on your profile
-          </CardDescription>
+      <Card className="overflow-hidden border-green-200 dark:border-green-900">
+        <CardHeader className="bg-gradient-to-r from-green-500/10 to-teal-500/10 dark:from-green-500/20 dark:to-teal-500/20">
+          <CardTitle className="flex items-center gap-2">
+            <UtensilsCrossed className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span>Today's Diet Plan</span>
+          </CardTitle>
+          <CardDescription>Generate your personalized Ayurvedic meal plan</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <Button
             onClick={generateDietPlan}
-            className="w-full"
+            className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
             disabled={generating}
           >
             {generating ? (
@@ -176,93 +187,172 @@ export function DietPlan() {
     );
   }
 
+  const todaysPlan = getTodaysPlan();
+  if (!todaysPlan) {
+    return (
+      <Card className="overflow-hidden border-green-200 dark:border-green-900">
+        <CardHeader className="bg-gradient-to-r from-green-500/10 to-teal-500/10 dark:from-green-500/20 dark:to-teal-500/20">
+          <CardTitle className="flex items-center gap-2">
+            <UtensilsCrossed className="h-5 w-5 text-green-600 dark:text-green-400" />
+            <span>Today's Diet Plan</span>
+          </CardTitle>
+          <CardDescription>No plan found for today</CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Button
+            onClick={generateDietPlan}
+            className="w-full bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600"
+          >
+            Generate New Plan
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Your Weekly Diet Plan</CardTitle>
-        <CardDescription>
-          Personalized Ayurvedic meal plan for optimal wellness
+    <Card className="overflow-hidden border-green-200 dark:border-green-900">
+      <CardHeader className="bg-gradient-to-r from-green-500/10 to-teal-500/10 dark:from-green-500/20 dark:to-teal-500/20">
+        <CardTitle className="flex items-center gap-2">
+          <UtensilsCrossed className="h-5 w-5 text-green-600 dark:text-green-400" />
+          <span>Today's Diet Plan</span>
+        </CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          <Calendar className="h-4 w-4" />
+          {format(new Date(), 'EEEE, MMMM d')}
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue={dietPlan.dailyPlans[0].day.toLowerCase()}>
-          <TabsList className="grid grid-cols-7">
-            {dietPlan.dailyPlans.map((day) => (
-              <TabsTrigger key={day.day} value={day.day.toLowerCase()}>
-                {day.day}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-          
-          {dietPlan.dailyPlans.map((day) => (
-            <TabsContent key={day.day} value={day.day.toLowerCase()}>
-              <div className="space-y-6">
-                {day.meals.map((meal, index) => (
-                  <div key={index} className="space-y-4">
-                    <h3 className="text-lg font-semibold">{meal.time}</h3>
-                    
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Meal Items</h4>
-                      <ul className="list-disc list-inside space-y-1">
-                        {meal.items.map((item, i) => (
-                          <li key={i}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="font-medium">Recommended Herbs</h4>
-                      <ul className="list-disc list-inside space-y-1">
-                        {meal.herbs.map((herb, i) => (
-                          <li key={i}>{herb}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {meal.recipe && (
-                      <div className="bg-muted p-4 rounded-lg space-y-3">
-                        <h4 className="font-medium">{meal.recipe.name}</h4>
-                        
-                        <div>
-                          <h5 className="text-sm font-medium mb-1">Ingredients:</h5>
-                          <ul className="list-disc list-inside space-y-1 text-sm">
-                            {meal.recipe.ingredients.map((ingredient, i) => (
-                              <li key={i}>{ingredient}</li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h5 className="text-sm font-medium mb-1">Instructions:</h5>
-                          <ol className="list-decimal list-inside space-y-1 text-sm">
-                            {meal.recipe.instructions.map((instruction, i) => (
-                              <li key={i}>{instruction}</li>
-                            ))}
-                          </ol>
-                        </div>
-                      </div>
-                    )}
+      <CardContent className="mt-4">
+        <div className="space-y-6">
+          {todaysPlan.meals.map((meal, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="rounded-lg border bg-card"
+            >
+              <div 
+                className="p-4 cursor-pointer"
+                onClick={() => setExpandedMeal(expandedMeal === `${index}` ? null : `${index}`)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    <h3 className="font-medium">{meal.time}</h3>
                   </div>
-                ))}
-
-                <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <h3 className="font-medium mb-2">Daily Ayurvedic Remedies</h3>
-                  <ul className="list-disc list-inside space-y-1">
-                    {day.remedies.map((remedy, index) => (
-                      <li key={index}>{remedy}</li>
-                    ))}
-                  </ul>
+                  <ChevronDown 
+                    className={`h-5 w-5 transition-transform duration-200 ${
+                      expandedMeal === `${index}` ? 'rotate-180' : ''
+                    }`} 
+                  />
                 </div>
               </div>
-            </TabsContent>
+
+              <AnimatePresence>
+                {expandedMeal === `${index}` && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-4 pb-4 space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <Apple className="h-4 w-4" />
+                          Meal Items
+                        </div>
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {meal.items.map((item, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <Leaf className="h-4 w-4" />
+                          Recommended Herbs
+                        </div>
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {meal.herbs.map((herb, i) => (
+                            <li key={i} className="flex items-center gap-2">
+                              <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                              {herb}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {meal.recipe && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                            <Scroll className="h-4 w-4" />
+                            Recipe: {meal.recipe.name}
+                          </div>
+                          <div className="bg-muted/50 rounded-lg p-4 space-y-4">
+                            <div>
+                              <h5 className="text-sm font-medium mb-2">Ingredients:</h5>
+                              <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {meal.recipe.ingredients.map((ingredient, i) => (
+                                  <li key={i} className="flex items-center gap-2 text-sm">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                                    {ingredient}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-medium mb-2">Instructions:</h5>
+                              <ol className="space-y-2">
+                                {meal.recipe.instructions.map((instruction, i) => (
+                                  <li key={i} className="text-sm">
+                                    {i + 1}. {instruction}
+                                  </li>
+                                ))}
+                              </ol>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))}
-        </Tabs>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg"
+          >
+            <h3 className="font-medium flex items-center gap-2 mb-3">
+              <Leaf className="h-4 w-4 text-green-600 dark:text-green-400" />
+              Daily Ayurvedic Remedies
+            </h3>
+            <ul className="grid gap-2">
+              {todaysPlan.remedies.map((remedy, index) => (
+                <li key={index} className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                  {remedy}
+                </li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
       </CardContent>
       <CardFooter>
         <Button
           onClick={generateDietPlan}
           variant="outline"
-          className="w-full"
+          className="w-full border-green-200 dark:border-green-800 hover:bg-green-50 dark:hover:bg-green-900/20"
           disabled={generating}
         >
           Generate New Plan
