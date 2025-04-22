@@ -5,6 +5,8 @@ import { UserAvatar } from "@/components/chat/user-avatar";
 import { BotAvatar } from "@/components/chat/bot-avatar";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/lib/store";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessagesProps {
   chatId: string;
@@ -48,10 +50,27 @@ export function ChatMessages({
           ) : (
             <BotAvatar />
           )}
-          <div className="flex-1 overflow-hidden">
-            <p className="text-sm">
+          <div className="flex-1 overflow-hidden prose dark:prose-invert max-w-none">
+            <ReactMarkdown 
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Override default element styling
+                p: ({node, ...props}) => <p className="text-sm mb-2 last:mb-0" {...props} />,
+                h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-3" {...props} />,
+                h2: ({node, ...props}) => <h2 className="text-lg font-semibold mb-2" {...props} />,
+                h3: ({node, ...props}) => <h3 className="text-base font-medium mb-2" {...props} />,
+                ul: ({node, ...props}) => <ul className="list-disc list-inside mb-2" {...props} />,
+                ol: ({node, ...props}) => <ol className="list-decimal list-inside mb-2" {...props} />,
+                li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                code: ({node, ...props}) => <code className="bg-muted px-1 py-0.5 rounded text-sm" {...props} />,
+                pre: ({node, ...props}) => <pre className="bg-muted p-3 rounded-lg overflow-x-auto mb-2" {...props} />,
+                blockquote: ({node, ...props}) => (
+                  <blockquote className="border-l-4 border-muted pl-4 italic mb-2" {...props} />
+                ),
+              }}
+            >
               {message.content}
-            </p>
+            </ReactMarkdown>
           </div>
         </div>
       ))}

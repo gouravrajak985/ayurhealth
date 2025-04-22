@@ -80,3 +80,52 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Markdown Styles */
+.prose {
+  @apply text-foreground;
+}
+
+.prose code {
+  @apply bg-muted px-1 py-0.5 rounded text-sm;
+}
+
+.prose pre {
+  @apply bg-muted p-3 rounded-lg overflow-x-auto mb-2;
+}
+
+.prose blockquote {
+  @apply border-l-4 border-muted pl-4 italic mb-2;
+}
+
+.prose ul {
+  @apply list-disc list-inside mb-2;
+}
+
+.prose ol {
+  @apply list-decimal list-inside mb-2;
+}
+
+.prose li {
+  @apply mb-1;
+}
+
+.prose p {
+  @apply mb-2 last:mb-0;
+}
+
+.prose h1 {
+  @apply text-xl font-bold mb-3;
+}
+
+.prose h2 {
+  @apply text-lg font-semibold mb-2;
+}
+
+.prose h3 {
+  @apply text-base font-medium mb-2;
+}
+
+.dark .prose {
+  @apply text-foreground;
+}
