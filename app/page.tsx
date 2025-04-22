@@ -71,7 +71,7 @@ export default function Home() {
           <div className="flex-1 relative">
             <div className="rounded-2xl overflow-hidden shadow-xl w-full max-w-lg mx-auto">
               <img 
-                src="https://images.pexels.com/photos/3822113/pexels-photo-3822113.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+                src="/images/herbs2.png" 
                 alt="Ayurvedic wellness" 
                 className="w-full h-auto object-cover rounded-2xl"
               />
