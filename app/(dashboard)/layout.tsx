@@ -6,9 +6,10 @@ import Link from "next/link";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { SubscriptionPopup } from "@/components/subscription/subscription-popup";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const [isUnpaid, setIsUnpaid] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     const checkSubscription = async () => {
@@ -25,9 +29,11 @@ export default function DashboardLayout({
         
         const user = await response.json();
         
-        if (user.subscriptionStatus === 'unpaid' && !window.location.pathname.includes('/subscription')) {
-          router.push('/subscription');
-          toast.error('Please subscribe to access the dashboard');
+        if (user.subscriptionStatus === 'unpaid') {
+          setIsUnpaid(true);
+          if (pathname !== '/subscription') {
+            setShowPopup(true);
+          }
         }
       } catch (error) {
         console.error('Error checking subscription:', error);
@@ -35,7 +41,7 @@ export default function DashboardLayout({
     };
 
     checkSubscription();
-  }, [router]);
+  }, [pathname]);
 
   return (
     <div className="h-screen flex flex-col">
@@ -67,10 +73,15 @@ export default function DashboardLayout({
       
       <div className="flex-1 flex overflow-hidden">
         <Sidebar className="hidden md:flex md:w-64 md:flex-col border-r" />
-        <main className="flex-1 overflow-y-auto bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-900 dark:to-gray-950">
+        <main className={`flex-1 overflow-y-auto bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-900 dark:to-gray-950 ${isUnpaid && pathname !== '/subscription' ? 'filter blur-sm pointer-events-none' : ''}`}>
           {children}
         </main>
       </div>
+
+      <SubscriptionPopup 
+        open={showPopup} 
+        onOpenChange={setShowPopup}
+      />
     </div>
   );
 }

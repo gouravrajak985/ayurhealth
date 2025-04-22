@@ -17,7 +17,7 @@ export async function POST() {
     }
 
     const subscription = await razorpay.orders.create({
-      amount: 100, // Amount in paise (₹999)
+      amount: 100, // Amount in paise (₹1)
       currency: 'INR',
       payment_capture: true,
     });
