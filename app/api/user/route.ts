@@ -31,22 +31,30 @@ export async function PUT(req: Request) {
       return new NextResponse('Unauthorized', { status: 401 });
     }
 
-    const { weight, height, age, gender, foodPreference } = await req.json();
-    console.log('Received data:', { weight, height, age, gender, foodPreference, userId });
-
+    const body = await req.json();
     await connectDB();
+
+    let updateData: any = {};
+
+    // Handle profile updates
+    if (body.weight || body.height || body.age || body.gender || body.foodPreference) {
+      updateData.profile = {
+        weight: body.weight,
+        height: body.height,
+        age: body.age,
+        gender: body.gender,
+        foodPreference: body.foodPreference
+      };
+    }
+
+    // Handle BMI updates
+    if (body.bmi) {
+      updateData['profile.bmi'] = body.bmi;
+    }
 
     const user = await User.findOneAndUpdate(
       { userId },
-      { 
-        profile: {
-          weight,
-          height,
-          age,
-          gender,
-          foodPreference
-        }
-      },
+      { $set: updateData },
       { new: true }
     );
 

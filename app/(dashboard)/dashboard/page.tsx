@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
 import { DietPlan } from "@/components/dashboard/diet-plan";
+import { WellnessRecommendations } from "@/components/dashboard/wellness-recommendations";
+import { BMIMeter } from "@/components/dashboard/bmi-meter";
 
 export default function DashboardPage() {
   const { userId } = auth();
@@ -43,30 +45,12 @@ export default function DashboardPage() {
           </CardFooter>
         </Card>
         
-        <Card className="overflow-hidden border-teal-200 dark:border-teal-900">
-          <CardHeader className="bg-gradient-to-r from-teal-500/10 to-blue-500/10 dark:from-teal-500/20 dark:to-blue-500/20">
-            <CardTitle className="flex items-center gap-2">
-              <LineChart className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-              <span>Wellness Tracker</span>
-            </CardTitle>
-            <CardDescription>Monitor your wellness journey</CardDescription>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <p>Track your daily habits and see how consistent Ayurvedic practices are improving your overall wellbeing.</p>
-          </CardContent>
-          <CardFooter>
-            <Link href="/tracker" className="w-full">
-              <Button variant="outline" className="w-full border-teal-500/50 text-teal-700 dark:text-teal-400 hover:bg-teal-500/10">
-                View Your Progress
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
-          </CardFooter>
-        </Card>
+        <BMIMeter />
       </div>
 
-      <div className="mt-8">
+      <div className="space-y-8">
         <DietPlan />
+        <WellnessRecommendations />
       </div>
     </div>
   );

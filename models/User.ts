@@ -11,6 +11,10 @@ const userSchema = new mongoose.Schema({
     enum: ['unpaid', 'paid'],
     default: 'unpaid'
   },
+  bodyNature: {
+    type: String,
+    enum: ['vata', 'pitta', 'kapha', 'vata-pitta', 'pitta-kapha', 'vata-kapha'],
+  },
   profile: {
     weight: Number,
     height: Number,
