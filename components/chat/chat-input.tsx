@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Mic, Paperclip } from "lucide-react";
 import { useState } from "react";
 import TextareaAutosize from "react-textarea-autosize";
 import { useChatStore } from "@/lib/store";
@@ -37,38 +37,62 @@ export function ChatInput({
   };
   
   return (
-    <form onSubmit={handleSubmit} className="relative border-t bg-background p-4">
-      <div className="relative flex items-center">
-        <TextareaAutosize
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder={placeholder}
-          className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 pr-12 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-          maxRows={5}
+    <form onSubmit={handleSubmit} className="relative border-t bg-background p-4  bg-gradient-to-br from-green-50 to-teal-50 dark:from-gray-900 dark:to-gray-950">
+      <div className="mx-auto max-w-4xl relative flex items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="flex-shrink-0"
           disabled={disabled}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-              e.preventDefault();
-              handleSubmit(e);
-            }
-          }}
-        />
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="absolute right-1 top-1"
         >
-          <Button 
-            type="submit"
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 text-muted-foreground hover:text-foreground" 
-            disabled={disabled || !message.trim()}
+          <Paperclip className="h-5 w-5 text-muted-foreground" />
+          <span className="sr-only">Attach file</span>
+        </Button>
+
+        <div className="relative flex-1">
+          <TextareaAutosize
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder={placeholder}
+            className="w-full resize-none rounded-2xl border bg-background px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            maxRows={5}
+            disabled={disabled}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
+          />
+        </div>
+
+        <div className="flex flex-shrink-0 gap-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            disabled={disabled}
           >
-            <Send className="h-5 w-5" />
-            <span className="sr-only">Send</span>
+            <Mic className="h-5 w-5 text-muted-foreground" />
+            <span className="sr-only">Voice input</span>
           </Button>
-        </motion.div>
+
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button 
+              type="submit"
+              size="icon"
+              className="bg-green-600 hover:bg-green-700 text-white" 
+              disabled={disabled || !message.trim()}
+            >
+              <Send className="h-5 w-5" />
+              <span className="sr-only">Send</span>
+            </Button>
+          </motion.div>
+        </div>
       </div>
     </form>
   );
