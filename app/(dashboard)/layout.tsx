@@ -108,6 +108,7 @@ export default function DashboardLayout({
 
           {/* Content Area */}
           <div className={`flex-1 ${isUnpaid && pathname !== '/subscription' ? 'filter blur-sm pointer-events-none' : ''}`}>
+          
             {children}
           </div>
         </main>

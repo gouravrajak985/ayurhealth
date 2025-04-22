@@ -3,7 +3,14 @@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare, LineChart, Home, Settings, Leaf } from "lucide-react";
+import {
+  MessageSquare,
+  LineChart,
+  Home,
+  Settings,
+  Leaf,
+  User,
+} from "lucide-react";
 import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { UserButton } from "@clerk/nextjs";
 
@@ -13,7 +20,7 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const pathname = usePathname();
-  
+
   const navItems = [
     {
       label: "Dashboard",
@@ -36,20 +43,25 @@ export function Sidebar({ className }: SidebarProps) {
       icon: Settings,
     },
   ];
-  
+
   return (
-    <div className={cn("flex flex-col w-full h-full bg-card", className)}>
-      <div className="flex-1 py-6">
-      <div className="flex items-center gap-2 ml-3">
+    <div className={cn("flex flex-col max-h-screen bg-card", className)}>
+      {/* Logo Section */}
+      <div className="p-6 border-b border-border/50">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <Leaf className="h-6 w-6 text-green-600 dark:text-green-400" />
           <span className="text-lg font-bold bg-gradient-to-r from-green-600 to-teal-500 dark:from-green-400 dark:to-teal-300 text-transparent bg-clip-text">
             AyurHealth.AI
           </span>
-        </div>
-        <nav className="px-3 space-y-1">
+        </Link>
+      </div>
+
+      {/* Navigation Section */}
+      <nav className="flex-1 px-3 py-6">
+        <div className="space-y-1">
           {navItems.map((item) => {
-            const isActive = 
-              pathname === item.href || 
+            const isActive =
+              pathname === item.href ||
               (item.href === "/chat" && pathname.startsWith("/chat/")) ||
               (item.href === "/tracker" && pathname.startsWith("/tracker/"));
 
@@ -58,10 +70,10 @@ export function Sidebar({ className }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-                  isActive 
-                    ? "bg-primary/10 text-primary" 
-                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary"
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-gradient-to-r from-green-500/10 to-teal-500/10 text-green-600 dark:text-green-400"
+                    : "text-muted-foreground hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5 hover:text-green-600 dark:hover:text-green-400"
                 )}
               >
                 <item.icon className="h-4 w-4" />
@@ -69,17 +81,25 @@ export function Sidebar({ className }: SidebarProps) {
               </Link>
             );
           })}
-        </nav>
-        <div className="flex items-center gap-3">
-              <ModeToggle />
-              <UserButton afterSignOutUrl="/" />
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile Only - Theme Toggle and User Button */}
-      <div className="md:hidden p-4 border-t flex items-center gap-3">
-        <ModeToggle />
-        <UserButton afterSignOutUrl="/" />
+      {/* User Controls Section */}
+      <div className="border-t border-border/50">
+        <div className="p-4 space-y-3">
+          <ModeToggle className="w-full justify-start text-sm font-medium text-muted-foreground hover:text-green-600 dark:hover:text-green-400 hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5" />
+          <div className="  flex flex-row items-start rounded-lg hover:bg-gradient-to-r hover:from-green-500/5 hover:to-teal-500/5 transition-colors">
+            <div
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-muted-foreground font-medium transition-colors"
+                
+              )}
+            >
+              <UserButton afterSignOutUrl="/" />
+              {"User"}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
