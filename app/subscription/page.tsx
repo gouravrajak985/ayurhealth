@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useUser } from "@clerk/clerk-react";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -17,6 +18,15 @@ declare global {
 export default function SubscriptionPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { isSignedIn, user, isLoaded } = useUser()
+  
+  if (!isLoaded) {
+    return <div>Loading...</div>
+  }
+
+  if (!isSignedIn) {
+    return <div>Sign in to view this page</div>
+  }
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -69,8 +79,8 @@ export default function SubscriptionPage() {
           }
         },
         prefill: {
-          name: 'User',
-          email: 'user@example.com',
+          name: '${user?.firstName} ${user?.lastName}',
+          email: '${user?.email_address',
         },
         theme: {
           color: '#10B981',
