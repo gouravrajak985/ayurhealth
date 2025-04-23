@@ -46,6 +46,9 @@ export async function POST(req: Request) {
       return new NextResponse('User profile not found', { status: 404 });
     }
 
+    // Delete existing diet plans for this user
+    await DietPlan.deleteMany({ userId });
+
     // Generate diet plan using Gemini
     const dailyPlans = await getAyurvedicDietPlan({
       weight: user.profile.weight,
