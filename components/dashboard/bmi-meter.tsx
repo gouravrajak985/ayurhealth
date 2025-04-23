@@ -126,7 +126,7 @@ export function BMIMeter() {
         <CardDescription>Body Mass Index Measurement</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="relative h-4 bg-gradient-to-r from-blue-500 via-green-500 via-orange-500 to-red-500 rounded-full overflow-hidden">
+        <div className="relative h-4 bg-gradient-to-r from-blue-500 via-green-500 to-red-500 rounded-full overflow-hidden">
           <motion.div
             className="absolute top-0 w-3 h-4 bg-white border-2 border-gray-200 rounded-full shadow-lg"
             style={{ left: `${getMeterPosition(bmiData.value)}%` }}

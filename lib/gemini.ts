@@ -164,3 +164,29 @@ Requirements:
     throw new Error("Failed to generate recommendations");
   }
 }
+
+export async function analyzeSleepQuality(messages: any[]) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `Analyze the following chat messages about sleep and wellness. Determine the overall sleep quality as either "good", "average", or "bad". Only respond with one of these three words.
+
+Chat history:
+${JSON.stringify(messages, null, 2)}`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const quality = response.text().trim().toLowerCase();
+    
+    // Ensure we only return valid values
+    console.log("Analyzed sleep quality:", quality);
+    if (!['good', 'average', 'bad'].includes(quality)) {
+      return 'average';
+    }
+    
+    return quality;
+  } catch (error) {
+    console.error("Error analyzing sleep quality:", error);
+    return 'average';
+  }
+}

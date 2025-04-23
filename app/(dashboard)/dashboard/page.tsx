@@ -8,6 +8,7 @@ import { formatDate } from "@/lib/utils";
 import { DietPlan } from "@/components/dashboard/diet-plan";
 import { WellnessRecommendations } from "@/components/dashboard/wellness-recommendations";
 import { BMIMeter } from "@/components/dashboard/bmi-meter";
+import { BodyNature } from "@/components/dashboard/body-nature";
 
 export default function DashboardPage() {
   const { userId } = auth();
@@ -49,6 +50,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="space-y-8">
+        <BodyNature />
         <DietPlan />
         <WellnessRecommendations />
       </div>
