@@ -116,7 +116,7 @@ export function WellnessRecommendations() {
         </CardTitle>
         <CardDescription>Your personalized Ayurvedic wellness practices</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-6 mt-4">
         {/* Mental Practices */}
         <div className="space-y-4">
           <h3 className="flex items-center gap-2 text-lg font-semibold">
